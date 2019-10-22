@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>WebGL 3D</title>
+    <link rel="shortcut icon" href="../shared/icons/grey.ico">
+    <link href="../shared/css/reset.css" rel="stylesheet" type="text/css">
+    <link href="../shared/css/floating_button.css" rel="stylesheet" type="text/css">
+    <link href="../shared/css/layout.css" rel="stylesheet" type="text/css">
+    <link href="../shared/css/github.css" rel="stylesheet" type="text/css">
+    <link href="./style.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <main>
+
+
+        <div class="elevated">
+            <header>
+                <a title="Back to Previews" class="button_toolbar close" id="button_close" href=".."></a>
+                <button title="Go Fullscreen" class="button_toolbar fullscreen" id="button_fullscreen"></button>
+                <button title="Reset Viewport" class="button_toolbar clear" id="button_clear"></button>
+                <div class="title">WebGL 3D</div>
+            </header>
+            <section id="screen">
+                <div id="fpsCounter"></div>
+                <canvas id="canvas"></canvas>
+            </section>
+            
+        </div>
+
+        <div class="buttons scene">
+            <div class="button_control no_action first" style="width: 80px">Scene</div>
+            <div id="x" class="slider_holder"></div>
+            <div id="y" class="slider_holder"></div>
+            <div id="z" class="slider_holder"></div>
+            <div id="angleX" class="slider_holder"></div>
+            <div id="angleY" class="slider_holder"></div>
+            <div id="angleZ" class="slider_holder"></div>
+            <button id="button_more" class="button_control button_more immediate last" title="More controls">...</button>
+        </div>
+
+        <div class="buttons more camera">
+            <div class="button_control no_action first" style="width: 80px">Camera</div>
+            <div id="fov" class="slider_holder"></div>
+            <div id="camX" class="slider_holder"></div>
+            <div id="camY" class="slider_holder"></div>
+            <div id="camZ" class="slider_holder"></div>
+            <div id="camAngleX" class="slider_holder"></div>
+            <div id="camAngleY" class="slider_holder last"></div>
+        </div>
+
+        <div class="buttons more target">
+            <div class="button_control no_action first" style="width: 80px">Target</div>
+            <div id="targetX" class="slider_holder"></div>
+            <div id="targetY" class="slider_holder"></div>
+            <div id="targetZ" class="slider_holder last"></div>
+        </div>
+
+        <div class="buttons more objects">
+            <div class="button_control no_action first" style="width: 100px">Geometry</div>
+            <div id="amount" class="slider_holder"></div>
+            <div id="spacing" class="slider_holder"></div>
+            <div id="scale" class="slider_holder"></div>
+            <div id="rotationX" class="slider_holder"></div>
+            <div id="rotationY" class="slider_holder"></div>
+            <div id="rotationZ" class="slider_holder last"></div>
+        </div>
+
+        <div class="buttons more">
+            <div id="button_torus" class="button_control first" style="width: 80px">Torus</div>
+            <div id="button_cylinder" class="button_control last" style="width: 80px">Cylinder</div>
+            <div class="divider"></div>
+            <div id="torusR" class="slider_holder torus first"></div>
+            <div id="torusSR" class="slider_holder torus"></div>
+            <div id="torusStrips" class="slider_holder torus"></div>
+            <div id="torusSections" class="slider_holder torus last"></div>
+
+            <div id="cylinderRadius" class="slider_holder cylinder first"></div>
+            <div id="cylinderHeight" class="slider_holder cylinder"></div>
+            <div id="cylinderSides" class="slider_holder cylinder last"></div>
+        </div>
+
+        <div class="buttons modes more">
+            <div id="button_opaque" class="button_control button_mode first">Opaque</div>
+            <div id="texture" class="slider_holder active" style="display: none;"></div>
+            <div id="button_textured" class="button_control button_mode">Textured</div>
+            <div id="alpha" class="slider_holder last active" style="display: none;"></div>
+            <div id="button_translucent" class="button_control button_mode last">Translucent</div>
+            <div class="divider"></div>
+            <div id="button_unmasked" class="button_control first">Unmasked</div>
+            <div id="button_masked" class="button_control last">Masked</div>
+            <div class="divider"></div>
+            <button id="button_triangles" class="button_control button_triangles first" title="Primitive type: triangle strip" style="width: 64px;"></button>
+            <button id="button_lines" class="button_control button_lines last" title="Primitive type: line strip" style="width: 64px;"></button>
+        </div>
+
+        <div class="buttons light more">
+            <div class="button_control no_action first" style="width: 80px">Light</div>
+            <div id="lightX" class="slider_holder"></div>
+            <div id="lightY" class="slider_holder"></div>
+            <div id="lightZ" class="slider_holder"></div>
+            <div id="ambient" class="slider_holder last"></div>
+        </div>
+        
+    </main>
+
+    <a class="button_floating back" href="../Lab6-WebGL2D" title="WebGL 2D"></a>
+    <a class="button_floating home right" href=".." title="Back to previews"></a>
+
+    <script src="../shared/scripts/polyfills.js"></script>
+    <script src="../shared/lib/jquery.min.js"></script>
+
+    <script src="./classes/V3Math.js"></script>
+    <script src="./classes/M4Math.js"></script>
+    <script src="./classes/Geometry.js"></script>
+    <script src="./classes/Renderer3D.js"></script>
+
+    <script src="./scripts/utils.js"></script>
+    <script src="./scripts/ui.js"></script>
+    <script src="./scripts/setupSliders.js"></script>
+
+    <script id="3d-vertex-shader" type="x-shader/x-vertex">
+        attribute vec4 a_position;
+        attribute vec3 a_normal;
+        attribute vec2 a_texcoord;
+
+        uniform mat4 u_worldViewProjection;
+        uniform mat4 u_world;
+
+        varying vec3 v_normal;
+        varying vec2 v_texcoord;
+
+        void main() {
+            gl_Position = u_worldViewProjection * a_position;
+            v_normal = mat3(u_world) * a_normal;
+            v_texcoord = a_texcoord;
+        }
+    </script>
+
+    <script id="3d-fragment-shader" type="x-shader/x-fragment">
+        precision mediump float;
+
+        varying vec3 v_normal;
+        varying vec2 v_texcoord;
+
+        uniform vec3 u_reverseLightDirection;
+        uniform sampler2D u_texture;
+        uniform float u_ambient_light;
+
+        void main() {
+            vec3 normal = normalize(v_normal);
+            float light = dot(normal, u_reverseLightDirection);
+
+            gl_FragColor = texture2D(u_texture, v_texcoord);
+            gl_FragColor.rgb *= u_ambient_light + light;
+        }
+    </script>
+
+    <script src="../shared/scripts/shared.js"></script>
+    <script src="./script.js"></script>
+    <script src="../shared/scripts/transition.js"></script>
+</body>
+
+</html>

@@ -1,1 +1,1 @@
-# laba_6-
+https://unshame.github.io/CGDemo/Lab7-WebGL3D
